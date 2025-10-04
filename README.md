@@ -1,14 +1,21 @@
 # webentwicklung
-<!DOCTYPE html>
-<html lang="de">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Titel der Seite</title>
-    <link rel="stylesheet" href="myStyle.css" />
-    <script src="myScript.js" defer></script>
-  </head>
-  <body>
-    <p>Text im Browserfenster</p>
-  </body>
-</html>
+## Projektidee: MyTravelWorld
+- Interaktive Webanwendung für Reisende
+- Jeder Nutzer hat eine eigene Weltkugel mit markierten, bereisten Ländern
+- Zu jedem Land: persönliche Highlights, Routen, Fotos, Empfehlungen
+- Austausch mit anderen über Kommentare, Likes und länderspezifische Chats um sich auszutauschen
+- Startseite / Weltkarte → Übersicht der bereisten Länder
+### Unterseiten:
+- Länder-Seite → eigene Highlights + Inhalte anderer 
+- Community-Chat → Austausch zu jedem Land
+- Profil → persönliche Weltkarte, Statistiken, 
+- Speicherung: Nutzer-Accounts (Login, Profil)
+- Bereiste Länder, Highlights, Fotos, Empfehlungen, Kommentare, Likes, Chat-Nachrichten
+- Eingabe & Bearbeitung:
+Highlights/Tipps über Formulare hinzufügen, bearbeiten, löschen
+- Kommentare schreiben, liken, löschen
+- Chatnachrichten in länderspezifischen Chats
+- Weltkarte zeigt eigene Reisen
+- Länder-Seiten zeigen eigene und fremde Highlights/Kommentare
+- Chats zeigen Diskussionen und Tipps in Echtzeit
+- Profil-Seite zeigt persönliche Übersicht
