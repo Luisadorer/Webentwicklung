@@ -1,0 +1,81 @@
+h1 {
+    text-align: center;
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: bolder;
+    font-size: 60px;
+    color: #333;
+}
+
+h2 {
+    color: #333;
+    font-family: 'Special Elite', monospace;
+    font-size: large;
+    text-align: center;
+}
+
+.card {
+    background-color: #fff;
+    /* Weißer Hintergrund */
+    border-radius: 10px;
+    /* Abgerundete Ecken */
+    padding: 15px;
+    /* Innenabstand */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    /* Weicher Schatten */
+    text-align: center;
+    /* Inhalt zentriert */
+    transition: transform 0.2s ease;
+    /* Sanfte Bewegung bei Hover */
+}
+
+.gallery {
+    display: grid;
+    /* CSS-Grid-Layout aktivieren */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    /* Automatisch anpassbare Spalten */
+    gap: 30px;
+    /* Abstand zwischen Karten */
+    padding: 40px;
+    /* Innenabstand des Galerie-Bereichs */
+    max-width: 1200px;
+    /* Maximale Breite */
+    margin: 0 auto;
+    /* Zentriert die Galerie auf der Seite */
+}
+
+.card img {
+    width: 100%;
+    /* Bild füllt die Karte komplett */
+    border-radius: 8px;
+    /* Ecken leicht abgerundet */
+    margin-bottom: 10px;
+    /* Abstand nach unten */
+    object-fit: cover;
+    /* Bild wird zugeschnitten, ohne verzerrt zu werden */
+}
+
+body {
+    background-color: rgb(220, 235, 239);
+}
+
+/* Sternebewertung */
+.stars {
+    display: flex;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 30px;
+}
+
+.star {
+    color: lightgray;
+    transition: color 0.2s;
+}
+
+.star.selected {
+    color: gold;
+}
+
+.rating-display {
+    margin-top: 10px;
+    font-size: 16px;
+}
