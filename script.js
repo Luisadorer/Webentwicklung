@@ -1,9 +1,9 @@
 // NAME HANDLING
 function getUserName() {
-    return localStorage.getItem("username") || "";
+    return localStorage.getItem("username") || ""; //gespeicherten Namen holen
 }
 
-function requireUserName(callback) {
+function requireUserName(callback) { // Callback-Funktion, die den Namen erhält
     let name = getUserName();
 
     if (name) {
@@ -72,106 +72,150 @@ document.querySelectorAll('.ort').forEach(ort => { // Für jeden Ort
     });
 });
 
-
-// Kommentarfunktion
-function loadComments(ort) { // Kommentare laden
-    return JSON.parse(localStorage.getItem("comments_" + ort) || "[]"); //keine Kommentare ->leeres Array
+async function requestJsonWithGET(url) {
+    const response = await fetch(url);
+    console.log('Response:', response);
+    const jsonData = await response.json();
+    return jsonData;
 }
 
-function saveComments(ort, comments) { // Kommentare speichern
+// Kommentarfunktion
+async function loadComments(ort) {
+    const data = await requestJsonWithGET(
+        'http://localhost:3000/?ort=' + ort //holt kommentare vom Server und wird als JSON zurückgegeben
+    );
+    return data;
+}
+
+function saveComments(ort, comments) { // Kommentare im Browser speichern
     localStorage.setItem("comments_" + ort, JSON.stringify(comments));
 }
 
-document.querySelectorAll('.ort').forEach(section => { // Für jeden Ort
-    const ort = section.dataset.ort; // Ort-ID holen
-    const input = section.querySelector('.comment-input'); // Eingabefeld
-    const button = section.querySelector('.comment-submit');// Senden-Button
-    const list = section.querySelector('.comment-list');// Kommentar-Liste
-
-    let comments = loadComments(ort); // Kommentare laden
-
-    // Anzeige vorhandener Kommentare
-    comments.forEach(c => createCommentBox(c));
-
-    function createCommentBox(c) { // Kommentar-Box erstellen
-        const box = document.createElement('div');
-        box.classList.add('comment-box'); // Klasse hinzufügen
-        box.innerHTML = `<strong>${c.user}</strong> (${c.date}):<br>${c.text}`; // Kommentarinhalt
-
-        // Löschen
-        const delBtn = document.createElement('button'); // Löschen-Button
-        delBtn.textContent = 'x';
-        delBtn.classList.add('delete-comment'); // Klasse hinzufügen
-
-        delBtn.addEventListener('click', () => { // Klick auf Löschen
-            box.remove();
-            comments = comments.filter(comment => comment !== c); // Kommentar aus Array entfernen
-            saveComments(ort, comments); // Kommentare speichern
-        });
-
-        box.appendChild(delBtn); // Button zur Box hinzufügen
-        list.appendChild(box);// Box zur Liste hinzufügen
-    }
-
-    // Kommentar absenden
-    button.addEventListener('click', () => { // Klick auf Senden
-
-        requireUserName((name) => { //erst ausführen wenn Name vorhanden
-            const text = input.value.trim(); // Eingabetext holen und trimmen
-            if (!text) return; // nichts tun, wenn Text leer ist
-
-            const now = new Date(); // aktuelles Datum
-            const dateString = now.toLocaleDateString("de-DE") + " "; // Datum formatieren
-
-            const commentObj = { // Kommentarobjekt erstellen
-                user: name,
-                text: text,
-                date: dateString
-            };
-
-            comments.push(commentObj); // Kommentar zum Array hinzufügen
-            saveComments(ort, comments);
-
-            createCommentBox(commentObj); // Kommentar-Box erstellen
-            input.value = '';
-        });
+async function sendJsonWithPOST(url, jsonData) { //sendet Kommentar an Speicher und Server speichert ihn in MongoDB
+    const response = await fetch(url, { //fetch=HTTP-Anfrage
+        method: 'post',
+        headers: { //JSON-Daten werden gesendet
+            'Content-Type': 'application/json'
+        },
+        body: jsonData
 
     });
-
-    // Wishlist laden
-    let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]"); // Wishlist aus localStorage
-
-    document.querySelectorAll('.ort').forEach(section => { // Für jeden Ort
-        const ortId = section.dataset.ort;
-
-        // Herz-Button erstellen
-        const heart = document.createElement('span'); // Herz-Element
-        heart.classList.add('wishlist-heart');
-        heart.innerHTML = '♥'; // Herzsymbol
-        if (wishlist.includes(ortId)) heart.classList.add('active'); // falls in Wishlist, aktivieren
-        section.appendChild(heart);
-
-        // Klick auf Herz
-        heart.addEventListener('click', () => {
-            if (wishlist.includes(ortId)) {
-                // Entfernen
-                wishlist = wishlist.filter(id => id !== ortId);
-                heart.classList.remove('active');
-            } else {
-                // Hinzufügen
-                wishlist.push(ortId);
-                heart.classList.add('active');
-            }
-            localStorage.setItem("wishlist", JSON.stringify(wishlist));
-        });
+}
+//Löschen-Funktion aus MongoDB über ID
+async function sendDeleteRequest(id) {
+    await fetch('http://localhost:3000/', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id })
     });
+}
 
-    // Enter-Taste
-    input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            button.click();
+async function initializeComments() { //Hauptfunktion für Kommentare 
+
+    const ortellemente = document.querySelectorAll('.ort'); // Alle Orte holen
+    for (const section of ortellemente) {// Für jeden Ort
+        const ort = section.dataset.ort; // Ort-ID holen
+        const input = section.querySelector('.comment-input'); // Eingabefeld
+        const button = section.querySelector('.comment-submit');// Senden-Button
+        const list = section.querySelector('.comment-list');// Kommentar-Liste
+
+        let comments = await loadComments(ort); // Anfrage an Server, MongoDB-Abfrage, Kommentare kommen zurück, comments ist Array 
+
+        // Anzeige vorhandener Kommentare
+        comments.forEach(c => createCommentBox(c)); // Für jeden Kommentar Box erstellen
+
+        function createCommentBox(c) { // Kommentar-Box erstellen
+            const box = document.createElement('div');
+            box.classList.add('comment-box'); // Klasse hinzufügen
+            box.innerHTML = `<strong>${c.user}</strong> (${c.date}):<br>${c.text}`; // Kommentarinhalt
+
+            // Löschen
+            const delBtn = document.createElement('button'); // Löschen-Button
+            delBtn.textContent = 'x';
+            delBtn.classList.add('delete-comment'); // Klasse hinzufügen
+
+            delBtn.addEventListener('click', async () => {
+
+                // Kommentar im Browser sofort entfernen
+                box.remove();
+
+                // Kommentar aus MongoDB löschen
+                await sendDeleteRequest(c._id);
+
+                // Kommentare neu vom Server laden (sauberer Zustand)
+                comments = await loadComments(ort);
+
+                // Liste neu anzeigen
+                list.innerHTML = '';
+                comments.forEach(c => createCommentBox(c));
+            });
+
+
+            box.appendChild(delBtn);
+            list.appendChild(box);
         }
-    });
-});
 
+        // Kommentar absenden
+        button.addEventListener('click', () => {
+
+            requireUserName(async (name) => {
+                const text = input.value.trim();
+                if (!text) return;
+
+                const now = new Date();
+                const dateString = now.toLocaleDateString("de-DE") + " ";
+
+                const commentObj = {
+                    user: name,
+                    text: text,
+                    date: dateString,
+                    ort: ort
+                };
+
+                const jsonData = JSON.stringify(commentObj);
+                await sendJsonWithPOST('http://localhost:3000/', jsonData); //MongoDB speichert
+
+                list.innerHTML = '';
+                comments = await loadComments(ort); //immer aktuelle Kommentare laden
+                comments.forEach(c => createCommentBox(c));
+
+                input.value = '';
+
+            });
+        });
+
+        // Wishlist
+        let wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+
+        document.querySelectorAll('.ort').forEach(section => {
+            const ortId = section.dataset.ort;
+
+            const heart = document.createElement('span');
+            heart.classList.add('wishlist-heart');
+            heart.innerHTML = '♥';
+            if (wishlist.includes(ortId)) heart.classList.add('active');
+            section.appendChild(heart);
+
+            heart.addEventListener('click', () => {
+                if (wishlist.includes(ortId)) {
+                    wishlist = wishlist.filter(id => id !== ortId);
+                    heart.classList.remove('active');
+                } else {
+                    wishlist.push(ortId);
+                    heart.classList.add('active');
+                }
+                localStorage.setItem("wishlist", JSON.stringify(wishlist));
+            });
+        });
+
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                button.click();
+            }
+        });
+    }
+}
+initializeComments();
